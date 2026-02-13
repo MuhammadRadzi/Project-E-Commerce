@@ -81,7 +81,7 @@ $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
 				// Logika Kategori 7: Cek Stok
 				$isHabis = ($row['stok'] <= 0);
 				$cardClass = $isHabis ? 'out-of-stock' : '';
-				$stokLabel = $isHabis ? 'Stock Habis' : 'Stok: ' . $row['stok'];
+				$stokLabel = $isHabis ? 'Stok Habis' : 'Stok: ' . $row['stok'];
 				$badgeClass = $isHabis ? 'bg-danger' : 'bg-success';
 
 				// Cek Gambar (Kalau kosong pakai placeholder)
