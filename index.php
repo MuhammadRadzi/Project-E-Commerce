@@ -15,21 +15,8 @@ $jumlahHalaman = ceil($jumlahData / $jumlahDataPerHalaman);
 $halamanAktif = (isset($_GET['halaman'])) ? $_GET['halaman'] : 1;
 $awalData = ($jumlahDataPerHalaman * $halamanAktif) - $jumlahDataPerHalaman;
 
-// Query utama dengan LIMIT dan LIKE
-$query = "SELECT * FROM barang WHERE nama_barang LIKE '%$keyword%' OR jenis_barang LIKE '%$keyword%' 
-        ORDER BY id_barang DESC LIMIT $awalData, $jumlahDataPerHalaman";
-$result = mysqli_query($conn, $query);
-
 // Menggunakan fungsi dari functions.php
 $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
-
-// Jika orang mau beli, tapi belum login, arahkan ke login dulu
-if (isset($_GET['beli']) && !isset($_SESSION['status'])) {
-	header("location:login.php?pesan=belum_login");
-	exit;
-}
-
-// -------------------------------------
 
 ?>
 
@@ -78,14 +65,14 @@ if (isset($_GET['beli']) && !isset($_SESSION['status'])) {
 			<!-- Search Section -->
 			<section class="search-section" aria-label="Pencarian Produk">
 				<form action="index.php" method="get" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 2rem;">
-					<input type="search" name="cari" placeholder="Cari barang..." value="<?php echo $keyword; ?>" aria-label="Cari barang" style="padding: 10px; border-radius: 4px; border: 1px solid #ccc; width: 300px;">
+					<input type="search" name="cari" placeholder="Cari barang..." value="<?php echo htmlspecialchars($keyword); ?>" aria-label="Cari barang" style="padding: 10px; border-radius: 4px; border: 1px solid #ccc; width: 300px;">
 					<button type="submit" class="btn-buy" style="width: auto; padding: 10px 20px;">Cari</button>
 				</form>
 			</section>
 		</header>
 
 		<?php if ($keyword != ""): ?>
-			<p style="margin-bottom: 1rem;">Menampilkan hasil pencarian untuk: <b>"<?php echo $keyword; ?>"</b> (<?php echo $jumlahData; ?> ditemukan)</p>
+			<p style="margin-bottom: 1rem;">Menampilkan hasil pencarian untuk: <b>"<?php echo htmlspecialchars($keyword); ?>"</b> (<?php echo $jumlahData; ?> ditemukan)</p>
 		<?php endif; ?>
 
 		<section class="catalog">
@@ -102,32 +89,32 @@ if (isset($_GET['beli']) && !isset($_SESSION['status'])) {
 				if ($gambar == 'no-image.jpg' || empty($gambar)) {
 					$imgSrc = "https://placehold.co/300x200?text=" . urlencode($row['nama_barang']);
 				} else {
-					$imgSrc = "img/" . $gambar;
+					$imgSrc = "img/" . htmlspecialchars($gambar);
 				}
 				?>
 
 				<article class="card <?php echo $cardClass; ?>">
 					<figure>
 						<img src="<?php echo $imgSrc; ?>"
-							alt="<?php echo htmlspecialchars($row['nama_barang']); ?> - <?php echo $row['jenis_barang']; ?>"
+							alt="<?php echo htmlspecialchars($row['nama_barang']); ?> - <?php echo htmlspecialchars($row['jenis_barang']); ?>"
 							loading="lazy" class="card-img-top">
 					</figure>
 					<div class="card-body">
 						<header>
-							<span class="card-category"><?php echo $row['jenis_barang']; ?></span>
-							<h3 class="card-title"><?php echo $row['nama_barang']; ?></h3>
+							<span class="card-category"><?php echo htmlspecialchars($row['jenis_barang']); ?></span>
+							<h3 class="card-title"><?php echo htmlspecialchars($row['nama_barang']); ?></h3>
 						</header>
 
 						<p class="card-price">
 							<?php echo formatRupiah($row['harga']); ?>
 						</p>
 
-						<div>
+						<div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
 							<span class="badge <?php echo $badgeClass; ?>">
 								<?php echo $stokLabel; ?>
 							</span>
-							<span class="badge" style="border: 1px solid #ccc;">
-								<?php echo $row['kondisi']; ?>
+							<span class="badge" style="border: 1px solid #ccc; background: white; color: #666;">
+								<?php echo htmlspecialchars($row['kondisi']); ?>
 							</span>
 						</div>
 
@@ -148,18 +135,18 @@ if (isset($_GET['beli']) && !isset($_SESSION['status'])) {
 
 	<div class="pagination-container" style="text-align: center; margin: 2rem 0;">
 		<?php if ($halamanAktif > 1): ?>
-			<a href="?halaman=<?php echo $halamanAktif - 1; ?>&cari=<?php echo $keyword; ?>" class="btn-page">&laquo; Prev</a>
+			<a href="?halaman=<?php echo $halamanAktif - 1; ?>&cari=<?php echo urlencode($keyword); ?>" class="btn-page">&laquo; Prev</a>
 		<?php endif; ?>
 
 		<?php for ($i = 1; $i <= $jumlahHalaman; $i++) : ?>
-			<a href="?halaman=<?php echo $i; ?>&cari=<?php echo $keyword; ?>"
+			<a href="?halaman=<?php echo $i; ?>&cari=<?php echo urlencode($keyword); ?>"
 				class="btn-page <?php echo ($i == $halamanAktif) ? 'active' : ''; ?>">
 				<?php echo $i; ?>
 			</a>
 		<?php endfor; ?>
 
 		<?php if ($halamanAktif < $jumlahHalaman): ?>
-			<a href="?halaman=<?php echo $halamanAktif + 1; ?>&cari=<?php echo $keyword; ?>" class="btn-page">Next &raquo;</a>
+			<a href="?halaman=<?php echo $halamanAktif + 1; ?>&cari=<?php echo urlencode($keyword); ?>" class="btn-page">Next &raquo;</a>
 		<?php endif; ?>
 	</div>
 

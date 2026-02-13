@@ -2,6 +2,12 @@
 session_start();
 include 'koneksi.php';
 
+// Cek apakah user sudah login
+if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
+    header("location:login.php?pesan=belum_login");
+    exit;
+}
+
 // Validasi ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     echo "<script>alert('Invalid request!'); window.location='index.php';</script>";
