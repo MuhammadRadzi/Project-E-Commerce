@@ -1,0 +1,332 @@
+:root {
+	/* CSS Variables untuk Konsistensi Visual */
+	--primary-color: #2563eb;
+	--secondary-color: #1e40af;
+	--accent-color: #10b981;
+	--danger-color: #ef4444;
+	--bg-color: #f8fafc;
+	--card-bg: #ffffff;
+	--text-main: #1e293b;
+	--text-muted: #64748b;
+
+	/* Spacing & Shadow */
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	line-height: 1.6;
+}
+
+/* Navbar */
+nav {
+	background-color: var(--primary-color);
+	padding: 1rem 2rem;
+	color: white;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav h1 {
+	font-size: 1.5rem;
+}
+
+nav ul {
+	display: flex;
+	list-style: none;
+	gap: 20px;
+}
+
+nav a {
+	color: white;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+nav a:hover {
+	text-decoration: underline;
+}
+
+/* Container */
+.container {
+	max-width: 1200px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.page-title {
+	margin-bottom: 2rem;
+	text-align: center;
+}
+
+/* Container Katalog menggunakan CSS Grid */
+.catalog {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 2rem;
+	padding: 2rem 0;
+}
+
+/* Navigasi menggunakan Flexbox */
+nav {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: var(--primary-color);
+	padding: 1rem 5%;
+	position: sticky;
+	top: 0;
+	z-index: 1000;
+}
+
+nav ul {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	list-style: none;
+}
+
+/* Product Card */
+.card {
+	background: var(--card-bg);
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow: var(--shadow-sm);
+	transition: var(--transition);
+	display: flex;
+	border: 1px solid #e2e8f0;
+	flex-direction: column;
+}
+
+.card:hover {
+	transform: translateY(-10px);
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top {
+	width: 100%;
+	height: 200px;
+	object-fit: cover;
+	background-color: #ddd;
+	/* Placeholder color */
+}
+
+.card-body {
+	padding: 1.5rem;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.card-title {
+	font-size: 1.25rem;
+	margin-bottom: 0.5rem;
+}
+
+.card-category {
+	color: #6b7280;
+	font-size: 0.875rem;
+	margin-bottom: 1rem;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+.card-price {
+	font-size: 1.2rem;
+	font-weight: bold;
+	color: var(--primary-color);
+	margin-bottom: 0.5rem;
+}
+
+.badge {
+	display: inline-block;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.75rem;
+	border-radius: 4px;
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+
+.bg-success {
+	background-color: #d1fae5;
+	color: #065f46;
+}
+
+.bg-danger {
+	background-color: #fee2e2;
+	color: #991b1b;
+}
+
+/* Logic Stok Habis styling */
+.out-of-stock {
+	filter: grayscale(100%);
+	opacity: 0.8;
+}
+
+.btn-buy {
+	margin-top: auto;
+	background-color: var(--primary-color);
+	transition: var(--transition);
+	color: white;
+	border: none;
+	padding: 0.75rem;
+	width: 100%;
+	cursor: pointer;
+	font-size: 1rem;
+	border-radius: 5px;
+	text-align: center;
+	text-decoration: none;
+	position: relative;
+	overflow: hidden;
+}
+
+.btn-buy:hover {
+	background-color: var(--secondary-color);
+	filter: brightness(1.1);
+}
+
+.btn-disabled {
+	background-color: #9ca3af !important;
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+.bg-danger {
+	background-color: var(--danger);
+	color: white;
+}
+
+.bg-success {
+	background-color: #10b981;
+	color: white;
+}
+
+/* Styling Pagination */
+.btn-page {
+	padding: 8px 16px;
+	margin: 0 4px;
+	border: 1px solid var(--primary-color);
+	text-decoration: none;
+	color: var(--primary-color);
+	border-radius: 4px;
+	transition: 0.3s;
+}
+
+.btn-page:hover {
+	background-color: var(--primary-color);
+	color: white;
+}
+
+.btn-page.active {
+	background-color: var(--primary-color);
+	color: white;
+	font-weight: bold;
+}
+
+/* Efek saat tombol diklik */
+.btn-buy:active {
+	transform: scale(0.98);
+	opacity: 0.8;
+}
+
+/* Loading sederhana dengan cursor */
+.loading-cursor {
+	cursor: wait !important;
+}
+
+/* Entry Animation untuk Halaman */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.card {
+	animation: fadeInUp 0.5s ease backwards;
+}
+
+/* Memberikan delay animasi pada tiap card agar muncul bergantian */
+.card:nth-child(1) {
+	animation-delay: 0.1s;
+}
+
+.card:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.card:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+/* Penanganan untuk image agar konsisten di berbagai browser */
+.card-img-top {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    -webkit-user-drag: none; /* Safari & Chrome */
+}
+
+input[type="search"] {
+    -webkit-appearance: none; /* Menghilangkan styling default Safari */
+}
+
+/* Skeleton */
+.skeleton {
+	background: #e5e7eb;
+	background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+	background-size: 200% 100%;
+	animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+	0% {
+		background-position: 200% 0;
+	}
+
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+
+
+
+
+/* Responsiveness: Media Queries */
+/* Mobile */
+@media (max-width: 600px) {
+	.catalog {
+		grid-template-columns: 1fr;
+		/* Satu kolom di HP */
+	}
+
+	nav {
+		flex-direction: column;
+	}
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 1024px) {
+	.catalog {
+		grid-template-columns: repeat(2, 1fr);
+		/* Dua kolom di Tablet */
+	}
+}
