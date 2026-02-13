@@ -9,10 +9,17 @@ $id = $_GET['id'];
 $query = mysqli_query($conn, "SELECT * FROM barang WHERE id_barang = '$id'");
 $data = mysqli_fetch_assoc($query);
 
+// Prepared Statement
+$stmt = $conn->prepare("SELECT * FROM barang WHERE id_barang = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$data = $result->fetch_assoc();
+
 // Jika barang tidak ditemukan atau stok habis
 if (!$data || $data['stok'] <= 0) {
-	echo "<script>alert('Barang tidak tersedia!'); window.location='index.php';</script>";
-	exit;
+    echo "<script>alert('Barang tidak tersedia!'); window.location='index.php';</script>";
+    exit;
 }
 
 // Inisialisasi keranjang jika belum ada

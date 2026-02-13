@@ -70,6 +70,14 @@ if ($_SESSION['role'] != "admin") {
                         <option value="Rusak">Rusak</option>
                     </select>
                 </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label>Lokasi Rak</label>
+                    <input type="text" name="lokasi_rak" placeholder="Contoh: A-01"
+                        pattern="[A-Z]-[0-9]{2}" title="Format: A-01, B-05, dll"
+                        style="width: 100%; padding: 0.5rem;">
+                </div>
+
                 <div style="margin-bottom: 1rem;">
                     <label>Foto Barang</label>
                     <input type="file" name="gambar" accept="image/*" style="width: 100%;">

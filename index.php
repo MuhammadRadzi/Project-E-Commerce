@@ -93,9 +93,9 @@ if (isset($_GET['beli']) && !isset($_SESSION['status'])) {
 				<?php
 				// Logika Kategori 7: Cek Stok
 				$isHabis = ($row['stok'] <= 0);
+				$cardClass = $isHabis ? 'out-of-stock' : '';
 				$stokLabel = $isHabis ? 'Stock Habis' : 'Stok: ' . $row['stok'];
 				$badgeClass = $isHabis ? 'bg-danger' : 'bg-success';
-				$cardClass = $isHabis ? 'out-of-stock' : '';
 
 				// Cek Gambar (Kalau kosong pakai placeholder)
 				$gambar = $row['gambar'];
@@ -108,9 +108,10 @@ if (isset($_GET['beli']) && !isset($_SESSION['status'])) {
 
 				<article class="card <?php echo $cardClass; ?>">
 					<figure>
-						<img loading="lazy" src="<?php echo $imgSrc; ?>" alt="<?php echo $row['nama_barang']; ?>" class="card-img-top">
+						<img src="<?php echo $imgSrc; ?>"
+							alt="<?php echo htmlspecialchars($row['nama_barang']); ?> - <?php echo $row['jenis_barang']; ?>"
+							loading="lazy" class="card-img-top">
 					</figure>
-
 					<div class="card-body">
 						<header>
 							<span class="card-category"><?php echo $row['jenis_barang']; ?></span>

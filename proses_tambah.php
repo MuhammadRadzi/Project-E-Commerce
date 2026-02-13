@@ -7,6 +7,7 @@ $jenis   = input($_POST['jenis_barang']);
 $stok    = input($_POST['stok']);
 $harga   = input($_POST['harga']);
 $kondisi = input($_POST['kondisi']);
+$lokasi_rak = input($_POST['lokasi_rak']);
 
 // Logika Upload Gambar
 $gambar = $_FILES['gambar']['name'];
@@ -19,13 +20,13 @@ if ($gambar != "") {
 
 	if (in_array($ekstensi, $ekstensi_diperbolehkan) === true) {
 		move_uploaded_file($file_tmp, 'img/' . $nama_gambar_baru);
-		$query = "INSERT INTO barang (nama_barang, jenis_barang, stok, harga, kondisi, gambar) 
-                VALUES ('$nama', '$jenis', '$stok', '$harga', '$kondisi', '$nama_gambar_baru')";
+		$query = "INSERT INTO barang (nama_barang, jenis_barang, stok, harga, kondisi, lokasi_rak, gambar) 
+        	VALUES ('$nama', '$jenis', '$stok', '$harga', '$kondisi', '$lokasi_rak', '$nama_gambar_baru')";
 	}
 } else {
 	// Jika tidak ada gambar yang diupload
-	$query = "INSERT INTO barang (nama_barang, jenis_barang, stok, harga, kondisi, gambar) 
-            VALUES ('$nama', '$jenis', '$stok', '$harga', '$kondisi', 'no-image.jpg')";
+	$query = "INSERT INTO barang (nama_barang, jenis_barang, stok, harga, kondisi, lokasi_rak, gambar) 
+        	VALUES ('$nama', '$jenis', '$stok', '$harga', '$kondisi', '$lokasi_rak', '$nama_gambar_baru')";
 }
 
 $ukuran_file = $_FILES['gambar']['size'];
@@ -44,10 +45,9 @@ if ($result) {
 }
 
 if ($result) {
-    // Berhasil
-    header("location:admin.php?pesan=tambah_sukses");
+	// Berhasil
+	header("location:admin.php?pesan=tambah_sukses");
 } else {
-    // Gagal karena database
-    header("location:admin.php?pesan=error_db");
+	// Gagal karena database
+	header("location:admin.php?pesan=error_db");
 }
-
