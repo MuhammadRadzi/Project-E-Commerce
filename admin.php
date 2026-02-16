@@ -11,7 +11,6 @@ if ($_SESSION['status'] != "login" || $_SESSION['role'] != "admin") {
 // Ambil data barang
 $query = mysqli_query($conn, "SELECT * FROM barang");
 
-
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +29,6 @@ $query = mysqli_query($conn, "SELECT * FROM barang");
 			display: block;
 		}
 
-		/* Reset display flex dari login */
 		table {
 			width: 100%;
 			border-collapse: collapse;
@@ -67,23 +65,74 @@ $query = mysqli_query($conn, "SELECT * FROM barang");
 			background-color: #f59e0b;
 		}
 
-		/* Kuning/Orange */
 		.btn-delete {
 			background-color: #ef4444;
 		}
 
-		/* Merah */
 		.header-admin {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			margin-bottom: 2rem;
 		}
+
+		/* Loading Overlay */
+		.loading-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.7);
+			display: none;
+			justify-content: center;
+			align-items: center;
+			z-index: 9999;
+		}
+
+		.loading-overlay.active {
+			display: flex;
+		}
+
+		.loading-content {
+			background: white;
+			padding: 2rem;
+			border-radius: 12px;
+			text-align: center;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+		}
+
+		.spinner {
+			width: 50px;
+			height: 50px;
+			border: 4px solid #e5e7eb;
+			border-top: 4px solid var(--primary-color);
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+			margin: 0 auto 1rem;
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
 	</style>
 </head>
 
 <body>
-	
+	<!-- Loading Overlay -->
+	<div class="loading-overlay" id="loadingOverlay">
+		<div class="loading-content">
+			<div class="spinner"></div>
+			<p style="margin: 0; font-weight: 500;">Memproses...</p>
+		</div>
+	</div>
+
 	<header>
 		<nav>
 			<h1>Admin Dashboard</h1>
@@ -113,7 +162,6 @@ $query = mysqli_query($conn, "SELECT * FROM barang");
 			<div class="header-admin">
 				<h2>Data Barang Inventaris</h2>
 				<a href="tambah.php" class="btn-buy" style="width: auto; background: #10b981;">+ Tambah Barang</a>
-
 			</div>
 
 			<div class="table-responsive">
@@ -150,7 +198,7 @@ $query = mysqli_query($conn, "SELECT * FROM barang");
 								<td>
 									<a href="edit.php?id=<?php echo $d['id_barang']; ?>" class="action-btn" style="background: #f59e0b; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Edit</a>
 
-									<a href="hapus.php?id=<?php echo $d['id_barang']; ?>" class="action-btn" style="background: #ef4444; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;" onclick="return confirm('Apakah Anda yakin ingin menghapus barang ini?')">Hapus</a>
+									<a href="hapus.php?id=<?php echo $d['id_barang']; ?>" class="action-btn delete-btn" style="background: #ef4444; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;" data-nama="<?php echo htmlspecialchars($d['nama_barang']); ?>">Hapus</a>
 								</td>
 							</tr>
 						<?php endwhile; ?>
@@ -159,6 +207,26 @@ $query = mysqli_query($conn, "SELECT * FROM barang");
 			</div>
 		</section>
 	</main>
+
+	<script>
+		// Handle delete with loading
+		document.querySelectorAll('.delete-btn').forEach(function(btn) {
+			btn.addEventListener('click', function(e) {
+				e.preventDefault();
+
+				const namaBarang = this.getAttribute('data-nama');
+				const url = this.getAttribute('href');
+
+				if (confirm('Apakah Anda yakin ingin menghapus barang "' + namaBarang + '"?')) {
+					// Show loading overlay
+					document.getElementById('loadingOverlay').classList.add('active');
+
+					// Navigate to delete URL
+					window.location.href = url;
+				}
+			});
+		});
+	</script>
 
 </body>
 

@@ -30,9 +30,88 @@ $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
 	<meta name="keywords" content="komputer, laptop, hardware, e-commerce">
 	<title>Katalog Toko Komputer</title>
 	<link rel="stylesheet" href="style.css">
+	<style>
+		/* Loading Overlay */
+		.loading-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(255, 255, 255, 0.9);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 9999;
+			opacity: 1;
+			transition: opacity 0.3s;
+		}
+
+		.loading-overlay.hidden {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		.spinner {
+			width: 50px;
+			height: 50px;
+			border: 4px solid #e5e7eb;
+			border-top: 4px solid var(--primary-color);
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		/* Skeleton Card */
+		.skeleton-card {
+			background: white;
+			border-radius: 12px;
+			overflow: hidden;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+			border: 1px solid #e2e8f0;
+		}
+
+		.skeleton-img {
+			width: 100%;
+			height: 200px;
+			background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+			background-size: 200% 100%;
+			animation: skeleton-loading 1.5s infinite;
+		}
+
+		.skeleton-text {
+			height: 16px;
+			margin: 10px 15px;
+			background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+			background-size: 200% 100%;
+			animation: skeleton-loading 1.5s infinite;
+			border-radius: 4px;
+		}
+
+		.skeleton-text.short {
+			width: 60%;
+		}
+
+		.skeleton-text.long {
+			width: 80%;
+		}
+	</style>
 </head>
 
 <body>
+	<!-- Loading Overlay -->
+	<div class="loading-overlay" id="loadingOverlay">
+		<div class="spinner"></div>
+	</div>
 
 	<header>
 		<nav>
@@ -62,11 +141,11 @@ $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
 		<header class="page-header">
 			<h2 class="page-title">Katalog Produk</h2>
 
-			<!-- Search Section -->
+			<!-- Search Section with Loading -->
 			<section class="search-section" aria-label="Pencarian Produk">
-				<form action="index.php" method="get" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 2rem;">
+				<form action="index.php" method="get" id="searchForm" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 2rem;">
 					<input type="search" name="cari" placeholder="Cari barang..." value="<?php echo htmlspecialchars($keyword); ?>" aria-label="Cari barang" style="padding: 10px; border-radius: 4px; border: 1px solid #ccc; width: 300px;">
-					<button type="submit" class="btn-buy" style="width: auto; padding: 10px 20px;">Cari</button>
+					<button type="submit" class="btn-buy" id="searchBtn" style="width: auto; padding: 10px 20px;">Cari</button>
 				</form>
 			</section>
 		</header>
@@ -75,17 +154,16 @@ $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
 			<p style="margin-bottom: 1rem;">Menampilkan hasil pencarian untuk: <b>"<?php echo htmlspecialchars($keyword); ?>"</b> (<?php echo $jumlahData; ?> ditemukan)</p>
 		<?php endif; ?>
 
-		<section class="catalog">
+		<section class="catalog" id="catalogSection">
 			<?php while ($row = mysqli_fetch_assoc($result)): ?>
 				<?php
-				
 				// Cek Stok
 				$isHabis = ($row['stok'] <= 0);
 				$cardClass = $isHabis ? 'out-of-stock' : '';
 				$stokLabel = $isHabis ? 'Stok Habis' : 'Stok: ' . $row['stok'];
 				$badgeClass = $isHabis ? 'bg-danger' : 'bg-success';
 
-				// Cek Gambar (Kalau kosong pakai placeholder)
+				// Cek Gambar
 				$gambar = $row['gambar'];
 				if ($gambar == 'no-image.jpg' || empty($gambar)) {
 					$imgSrc = "https://placehold.co/300x200?text=" . urlencode($row['nama_barang']);
@@ -136,24 +214,51 @@ $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
 
 	<div class="pagination-container" style="text-align: center; margin: 2rem 0;">
 		<?php if ($halamanAktif > 1): ?>
-			<a href="?halaman=<?php echo $halamanAktif - 1; ?>&cari=<?php echo urlencode($keyword); ?>" class="btn-page">&laquo; Prev</a>
+			<a href="?halaman=<?php echo $halamanAktif - 1; ?>&cari=<?php echo urlencode($keyword); ?>" class="btn-page pagination-link">&laquo; Prev</a>
 		<?php endif; ?>
 
 		<?php for ($i = 1; $i <= $jumlahHalaman; $i++) : ?>
 			<a href="?halaman=<?php echo $i; ?>&cari=<?php echo urlencode($keyword); ?>"
-				class="btn-page <?php echo ($i == $halamanAktif) ? 'active' : ''; ?>">
+				class="btn-page pagination-link <?php echo ($i == $halamanAktif) ? 'active' : ''; ?>">
 				<?php echo $i; ?>
 			</a>
 		<?php endfor; ?>
 
 		<?php if ($halamanAktif < $jumlahHalaman): ?>
-			<a href="?halaman=<?php echo $halamanAktif + 1; ?>&cari=<?php echo urlencode($keyword); ?>" class="btn-page">Next &raquo;</a>
+			<a href="?halaman=<?php echo $halamanAktif + 1; ?>&cari=<?php echo urlencode($keyword); ?>" class="btn-page pagination-link">Next &raquo;</a>
 		<?php endif; ?>
 	</div>
 
 	<footer style="text-align: center; padding: 2rem; background: #ddd; margin-top: 2rem;">
 		<p>&copy; 2026 Toko Komputer Project. All rights reserved.</p>
 	</footer>
+
+	<script>
+		// Hide loading overlay when page fully loaded
+		window.addEventListener('load', function() {
+			setTimeout(function() {
+				document.getElementById('loadingOverlay').classList.add('hidden');
+			}, 300);
+		});
+
+		// Show loading on form submit
+		document.getElementById('searchForm').addEventListener('submit', function() {
+			document.getElementById('searchBtn').innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></span> Mencari...';
+			document.getElementById('searchBtn').disabled = true;
+		});
+
+		// Show loading on pagination click
+		document.querySelectorAll('.pagination-link').forEach(function(link) {
+			link.addEventListener('click', function() {
+				document.getElementById('loadingOverlay').classList.remove('hidden');
+			});
+		});
+
+		// Add spin animation inline
+		const style = document.createElement('style');
+		style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+		document.head.appendChild(style);
+	</script>
 
 </body>
 
