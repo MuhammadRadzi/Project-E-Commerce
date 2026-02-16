@@ -78,7 +78,8 @@ $result = getBarang($awalData, $jumlahDataPerHalaman, $keyword);
 		<section class="catalog">
 			<?php while ($row = mysqli_fetch_assoc($result)): ?>
 				<?php
-				// Logika Kategori 7: Cek Stok
+				
+				// Cek Stok
 				$isHabis = ($row['stok'] <= 0);
 				$cardClass = $isHabis ? 'out-of-stock' : '';
 				$stokLabel = $isHabis ? 'Stok Habis' : 'Stok: ' . $row['stok'];

@@ -1,10 +1,7 @@
 <?php
 include 'koneksi.php';
 
-/**
- * KATEGORI 4 & 6: Input Sanitization
- * Membersihkan input untuk mencegah SQL Injection dan XSS
- */
+// Input Sanitazion
 function registrasi_input($data) {
     global $conn;
     $data = trim($data);
@@ -14,11 +11,7 @@ function registrasi_input($data) {
     return $data;
 }
 
-/**
- * KATEGORI 3: Read Functionality
- * Mengambil data barang dengan opsi pencarian dan pagination
- * UPDATED: Menggunakan prepared statements untuk keamanan maksimal
- */
+// Read Functionality
 function getBarang($awalData, $jumlahDataPerHalaman, $keyword = "") {
     global $conn;
     
@@ -35,10 +28,7 @@ function getBarang($awalData, $jumlahDataPerHalaman, $keyword = "") {
     return $stmt->get_result();
 }
 
-/**
- * KATEGORI 4: Transaction Handling
- * Fungsi untuk memproses pembelian dengan Rollback mechanism
- */
+// Transaction Handling
 function prosesPembelian($id_barang, $jumlah_beli) {
     global $conn;
     mysqli_begin_transaction($conn);
@@ -71,10 +61,7 @@ function prosesPembelian($id_barang, $jumlah_beli) {
     }
 }
 
-/**
- * Testing Helper
- * Fungsi sederhana untuk mengecek kesehatan database
- */
+// Health Check
 function checkSystemHealth() {
     global $conn;
     return $conn ? "Healthy" : "Down";
