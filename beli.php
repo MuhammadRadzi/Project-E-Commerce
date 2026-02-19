@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'koneksi.php';
+include 'navigation.php'; // Include navigation component
 
 // Cek apakah user sudah login
 if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
@@ -57,7 +58,7 @@ if (isset($_POST['proses_beli'])) {
         $stok_baru = $data_stok['stok'] - $jumlah_beli;
         $stmt_update = $conn->prepare("UPDATE barang SET stok = ? WHERE id_barang = ?");
         $stmt_update->bind_param("ii", $stok_baru, $id);
-        
+
         if (!$stmt_update->execute()) {
             throw new Exception("Gagal memperbarui stok.");
         }
@@ -73,7 +74,6 @@ if (isset($_POST['proses_beli'])) {
         mysqli_commit($conn);
         header("location:keranjang.php?pesan=berhasil_beli");
         exit;
-
     } catch (Exception $e) {
         // ROLLBACK - Batalkan semua perubahan
         mysqli_rollback($conn);
@@ -97,30 +97,105 @@ if (isset($_POST['proses_beli'])) {
 
 <body>
     <nav>
-        <?php breadcrumb("Konfirmasi Pembelian"); ?>
-        <h1>Konfirmasi Pembelian</h1>
+        <h1>E-Commerce Project</h1>
         <ul>
-            <li><a href="index.php">Kembali ke Katalog</a></li>
+            <li><a href="index.php">Katalog</a></li>
+            <li><a href="keranjang.php">Keranjang</a></li>
         </ul>
     </nav>
 
     <div class="container" style="max-width: 500px;">
-        <div class="card" style="padding: 2rem;">
-            <h2><?php echo htmlspecialchars($data['nama_barang']); ?></h2>
-            <p>Harga: <b><?php echo formatRupiah($data['harga']); ?></b></p>
-            <p>Tersedia: <?php echo $data['stok']; ?> unit</p>
-            <hr style="margin: 1rem 0;">
 
-            <form method="post">
-                <div style="margin-bottom: 1rem;">
-                    <label>Jumlah Beli:</label>
-                    <input type="number" name="jumlah" value="1" min="1" max="<?php echo $data['stok']; ?>" required
-                        style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+        <?php
+        // Enhanced page header with breadcrumb and back button
+        page_header(
+            'Konfirmasi Pembelian',
+            ['index.php' => 'Katalog'],
+            true
+        );
+        ?>
+
+        <div class="card" style="padding: 2rem;">
+            <div style="margin-bottom: 1.5rem;">
+                <?php if ($data['gambar'] != 'no-image.jpg'): ?>
+                    <img src="img/<?php echo htmlspecialchars($data['gambar']); ?>"
+                        alt="<?php echo htmlspecialchars($data['nama_barang']); ?>"
+                        style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                <?php endif; ?>
+
+                <h2 style="margin-bottom: 0.5rem;"><?php echo htmlspecialchars($data['nama_barang']); ?></h2>
+                <p style="font-size: 1.5rem; color: var(--primary-color); font-weight: bold;">
+                    <?php echo formatRupiah($data['harga']); ?>
+                </p>
+
+                <div style="display: inline-block; padding: 0.375rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 4px; font-size: 0.875rem; font-weight: 500;">
+                    Tersedia: <?php echo $data['stok']; ?> unit
                 </div>
-                <button type="submit" name="proses_beli" class="btn-buy">Masukkan ke Keranjang</button>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+            <form method="post" id="purchaseForm">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Jumlah Pembelian:</label>
+                    <input type="number" name="jumlah" id="jumlahInput" value="1" min="1" max="<?php echo $data['stok']; ?>" required
+                        style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+                    <small style="color: #64748b; margin-top: 0.25rem; display: block;">Maksimal: <?php echo $data['stok']; ?> unit</small>
+                </div>
+
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #64748b;">Harga Satuan:</span>
+                        <span style="font-weight: 600;"><?php echo formatRupiah($data['harga']); ?></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #64748b;">Jumlah:</span>
+                        <span style="font-weight: 600;" id="displayJumlah">1</span>
+                    </div>
+                    <hr style="margin: 0.75rem 0; border: none; border-top: 1px dashed #cbd5e1;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 700; font-size: 1.125rem;">Total:</span>
+                        <span style="font-weight: 700; font-size: 1.125rem; color: var(--primary-color);" id="displayTotal"><?php echo formatRupiah($data['harga']); ?></span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" onclick="history.back()" class="btn-buy" style="background: #64748b; flex: 1;">Batal</button>
+                    <button type="submit" name="proses_beli" class="btn-buy" style="flex: 2;">
+                        <svg style="width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: middle; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                        </svg>
+                        Masukkan ke Keranjang
+                    </button>
+                </div>
             </form>
         </div>
     </div>
+
+    <script>
+        // Real-time calculation
+        const jumlahInput = document.getElementById('jumlahInput');
+        const hargaSatuan = <?php echo $data['harga']; ?>;
+
+        jumlahInput.addEventListener('input', function() {
+            const jumlah = parseInt(this.value) || 1;
+            const total = hargaSatuan * jumlah;
+
+            document.getElementById('displayJumlah').textContent = jumlah;
+            document.getElementById('displayTotal').textContent = formatRupiah(total);
+        });
+
+        function formatRupiah(angka) {
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Form submission loading
+        document.getElementById('purchaseForm').addEventListener('submit', function(e) {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem;"></span>Memproses...';
+            btn.disabled = true;
+        });
+    </script>
 </body>
 
 </html>
