@@ -1,7 +1,6 @@
 <?php
 session_start();
 include 'koneksi.php';
-include 'navigation.php'; // Include navigation component
 
 // Cek apakah user sudah login
 if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
@@ -35,9 +34,7 @@ if (!isset($_SESSION['keranjang'])) {
     $_SESSION['keranjang'] = [];
 }
 
-
-// SINGLE LOGIC - Tambah ke Keranjang dengan Transaction
-
+// PROCESS FORM SUBMISSION
 if (isset($_POST['proses_beli'])) {
     $jumlah_beli = (int)$_POST['jumlah'];
 
@@ -102,6 +99,9 @@ if (isset($_POST['proses_beli'])) {
         exit;
     }
 }
+
+// Include navigation AFTER processing
+include 'navigation.php';
 ?>
 
 <!DOCTYPE html>
@@ -159,13 +159,13 @@ if (isset($_POST['proses_beli'])) {
                 </p>
 
                 <div style="display: inline-block; padding: 0.375rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 4px; font-size: 0.875rem; font-weight: 500; margin-top: 0.5rem;">
-                    Tersedia: <?php echo $data['stok']; ?> unit
+                    📦 Tersedia: <?php echo $data['stok']; ?> unit
                 </div>
             </div>
 
             <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e2e8f0;">
 
-            <form method="post" id="purchaseForm">
+            <form method="POST" action="" id="purchaseForm">
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Jumlah Pembelian:</label>
                     <input type="number" name="jumlah" id="jumlahInput" value="1" min="1" max="<?php echo $data['stok']; ?>" required
@@ -191,7 +191,7 @@ if (isset($_POST['proses_beli'])) {
 
                 <div style="display: flex; gap: 1rem;">
                     <button type="button" onclick="history.back()" class="btn-buy" style="background: #64748b; flex: 1;">Batal</button>
-                    <button type="submit" name="proses_beli" class="btn-buy" style="flex: 2;" id="submitBtn">
+                    <button type="submit" name="proses_beli" value="1" class="btn-buy" style="flex: 2;" id="submitBtn">
                         <svg style="width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: middle; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                         </svg>
@@ -203,6 +203,9 @@ if (isset($_POST['proses_beli'])) {
     </div>
 
     <script>
+        console.log('beli.php loaded');
+        console.log('Current cart count:', <?php echo count($_SESSION['keranjang'] ?? []); ?>);
+        
         // Real-time calculation
         const jumlahInput = document.getElementById('jumlahInput');
         const hargaSatuan = <?php echo $data['harga']; ?>;
@@ -211,7 +214,6 @@ if (isset($_POST['proses_beli'])) {
         jumlahInput.addEventListener('input', function() {
             let jumlah = parseInt(this.value) || 1;
             
-            // Validasi tidak melebihi stok
             if (jumlah > stokMax) {
                 jumlah = stokMax;
                 this.value = stokMax;
@@ -233,11 +235,13 @@ if (isset($_POST['proses_beli'])) {
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Form submission loading
+        // Form submission
         document.getElementById('purchaseForm').addEventListener('submit', function(e) {
-            const jumlah = parseInt(jumlahInput.value);
+            console.log('Form submit triggered!');
             
-            // Validasi sebelum submit
+            const jumlah = parseInt(jumlahInput.value);
+            console.log('Quantity:', jumlah);
+            
             if (jumlah < 1 || jumlah > stokMax) {
                 e.preventDefault();
                 alert('Jumlah tidak valid!');
@@ -247,6 +251,9 @@ if (isset($_POST['proses_beli'])) {
             const btn = document.getElementById('submitBtn');
             btn.innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem;"></span>Memproses...';
             btn.disabled = true;
+            
+            // Let form submit naturally
+            return true;
         });
         
         // Add animation
@@ -256,4 +263,4 @@ if (isset($_POST['proses_beli'])) {
     </script>
 </body>
 
-</html>
+</html>	
