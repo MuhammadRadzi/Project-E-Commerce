@@ -14,7 +14,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     exit;
 }
 
-$id = $_GET['id'];
+$id = (int)$_GET['id'];
 
 // Prepared Statement - Ambil detail barang
 $stmt = $conn->prepare("SELECT * FROM barang WHERE id_barang = ?");
@@ -34,7 +34,9 @@ if (!isset($_SESSION['keranjang'])) {
     $_SESSION['keranjang'] = [];
 }
 
-// PROCESS FORM SUBMISSION
+// ============================================
+// PROCESS FORM SUBMISSION (WITHOUT TRANSACTION)
+// ============================================
 if (isset($_POST['proses_beli'])) {
     $jumlah_beli = (int)$_POST['jumlah'];
 
@@ -44,60 +46,34 @@ if (isset($_POST['proses_beli'])) {
         exit;
     }
 
-    // MULAI TRANSAKSI
-    mysqli_begin_transaction($conn);
-
-    try {
-        // Cek stok terbaru dengan prepared statement dan lock
-        $stmt_stok = $conn->prepare("SELECT stok FROM barang WHERE id_barang = ? FOR UPDATE");
-        $stmt_stok->bind_param("i", $id);
-        $stmt_stok->execute();
-        $result_stok = $stmt_stok->get_result();
-        $data_stok = $result_stok->fetch_assoc();
-
-        if (!$data_stok) {
-            throw new Exception("Barang tidak ditemukan!");
-        }
-
-        if ($data_stok['stok'] < $jumlah_beli) {
-            throw new Exception("Maaf, stok tidak mencukupi! Tersedia: " . $data_stok['stok'] . " unit");
-        }
-
-        // Kurangi stok barang
-        $stok_baru = $data_stok['stok'] - $jumlah_beli;
-        $stmt_update = $conn->prepare("UPDATE barang SET stok = ? WHERE id_barang = ?");
-        $stmt_update->bind_param("ii", $stok_baru, $id);
-        
-        if (!$stmt_update->execute()) {
-            throw new Exception("Gagal memperbarui stok.");
-        }
-
-        // Cek apakah barang sudah ada di keranjang
-        if (isset($_SESSION['keranjang'][$id])) {
-            // Jika sudah ada, tambahkan jumlahnya
-            $_SESSION['keranjang'][$id]['jumlah'] += $jumlah_beli;
-        } else {
-            // Jika belum ada, buat entry baru
-            $_SESSION['keranjang'][$id] = [
-                'nama' => $data['nama_barang'],
-                'harga' => $data['harga'],
-                'jumlah' => $jumlah_beli
-            ];
-        }
-
-        // COMMIT - Simpan permanen
-        mysqli_commit($conn);
-        
-        // Redirect dengan pesan sukses
-        header("location:keranjang.php?pesan=berhasil_beli");
-        exit;
-
-    } catch (Exception $e) {
-        // ROLLBACK - Batalkan semua perubahan
-        mysqli_rollback($conn);
-        echo "<script>alert('" . htmlspecialchars($e->getMessage()) . "'); window.location='beli.php?id=$id';</script>";
+    // Validasi stok
+    if ($jumlah_beli > $data['stok']) {
+        echo "<script>alert('Stok tidak mencukupi! Tersedia: " . $data['stok'] . " unit'); window.location='beli.php?id=$id';</script>";
         exit;
     }
+
+    // Update stok (simple, tanpa transaction)
+    $stok_baru = $data['stok'] - $jumlah_beli;
+    $stmt_update = $conn->prepare("UPDATE barang SET stok = ? WHERE id_barang = ?");
+    $stmt_update->bind_param("ii", $stok_baru, $id);
+    $stmt_update->execute();
+
+    // Cek apakah barang sudah ada di keranjang
+    if (isset($_SESSION['keranjang'][$id])) {
+        // Jika sudah ada, tambahkan jumlahnya
+        $_SESSION['keranjang'][$id]['jumlah'] += $jumlah_beli;
+    } else {
+        // Jika belum ada, buat entry baru
+        $_SESSION['keranjang'][$id] = [
+            'nama' => $data['nama_barang'],
+            'harga' => $data['harga'],
+            'jumlah' => $jumlah_beli
+        ];
+    }
+
+    // Redirect dengan pesan sukses
+    header("location:keranjang.php?pesan=berhasil_beli");
+    exit;
 }
 
 // Include navigation AFTER processing
@@ -204,7 +180,6 @@ include 'navigation.php';
 
     <script>
         console.log('beli.php loaded');
-        console.log('Current cart count:', <?php echo count($_SESSION['keranjang'] ?? []); ?>);
         
         // Real-time calculation
         const jumlahInput = document.getElementById('jumlahInput');
@@ -252,7 +227,6 @@ include 'navigation.php';
             btn.innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem;"></span>Memproses...';
             btn.disabled = true;
             
-            // Let form submit naturally
             return true;
         });
         
@@ -263,4 +237,4 @@ include 'navigation.php';
     </script>
 </body>
 
-</html>	
+</html>
